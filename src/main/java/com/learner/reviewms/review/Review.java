@@ -12,7 +12,7 @@ public class Review {
     private String description;
     private double rating;
 
-    private Long companyid;
+    private Long companyId;
 
     public Review() {
     }
@@ -55,10 +55,10 @@ public class Review {
     }
 
     public Long getCompanyid() {
-        return companyid;
+        return companyId;
     }
 
-    public void setCompanyid(Long companyid) {
-        this.companyid = companyid;
+    public void setCompanyid(Long companyId) {
+        this.companyId = companyId;
     }
 }
