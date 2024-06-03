@@ -1,5 +1,6 @@
 package com.learner.reviewms.review;
 
+import com.learner.reviewms.review.messaging.ReviewMessageProducer;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,9 +12,11 @@ import java.util.List;
 public class ReviewController {
 
     private ReviewService reviewService;
+    private ReviewMessageProducer reviewMessageProducer;
 
-    public ReviewController(ReviewService reviewService) {
+    public ReviewController(ReviewService reviewService, ReviewMessageProducer reviewMessageProducer) {
         this.reviewService = reviewService;
+        this.reviewMessageProducer = reviewMessageProducer;
     }
 
     @GetMapping
@@ -24,8 +27,9 @@ public class ReviewController {
     @PostMapping
     public ResponseEntity<String> addReview(@RequestParam Long companyId,@RequestBody Review review){
         boolean isReviewSaved = reviewService.addReview(companyId,review);
-        if (isReviewSaved){
-            return new ResponseEntity<>("Review added successfully",HttpStatus.OK);
+        if (isReviewSaved) {
+            reviewMessageProducer.sendMessage(review);
+            return new ResponseEntity<>("Review added successfully", HttpStatus.OK);
         }
         else {
             return new ResponseEntity<>("Company not found",HttpStatus.NOT_FOUND);
@@ -59,5 +63,13 @@ public class ReviewController {
         else {
             return new ResponseEntity<>("Review Not Deleted",HttpStatus.NOT_FOUND);
         }
+
+    }
+
+    @GetMapping("/averageRating")
+    public Double getAverageRating(@RequestParam Long companyId){
+        List<Review> reviews = reviewService.getAllReviews(companyId);
+        return reviews.stream().mapToDouble(Review::getRating).average()
+                .orElse(0.0);
     }
 }
